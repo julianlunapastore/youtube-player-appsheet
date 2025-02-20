@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        var player;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('videoPlayer', {
+                height: '360',
+                width: '640',
+                videoId: 'uReacOuuk1U', // Tu ID de video
+                playerVars: {
+                    'controls': 0,   // Oculta los controles
+                    'disablekb': 1   // Desactiva el teclado
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === 0) { // 0 = El video terminó
+                // Enviar a AppSheet
+                fetch("https://api.appsheet.com/api/v2/apps/YOUR_APP_ID/tables/YOUR_TABLE_ID/rows", {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "ApplicationAccessKey": "YOUR_APPSHEET_API_KEY"
+                    },
+                    body: JSON.stringify({
+                        "rows": [{
+                            "KeyColumn": "USER_ID",
+                            "Video_Watched": "Sí",
+                            "Video_End_Time": new Date().toISOString()
+                        }]
+                    })
+                }).then(response => console.log("Actualizado en AppSheet"));
+            }
+        }
+    </script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+    <div id="videoPlayer"></div>
+</body>
+</html>
